@@ -1,12 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Load datasets
+cust = pd.read_csv('../data/Customers.csv')
+prod = pd.read_csv('../data/Products.csv')
+trans = pd.read_csv('../data/Transactions.csv')
 
-cust = pd.read_csv('Customers.csv')
-prod = pd.read_csv('Products.csv')
-trans = pd.read_csv('Transactions.csv')
-
-#Head
+# Display head
 print("Customers Data Head:")
 print()
 print(cust.head())
@@ -22,16 +22,16 @@ print()
 print(trans.head())
 print("\n\n")
 
-#Cleaning
+# Data cleaning
 cust['SignupDate'] = pd.to_datetime(cust['SignupDate'])
 trans['TransactionDate'] = pd.to_datetime(trans['TransactionDate'])
 
-#Combine
+# Combine datasets
 data = trans.merge(cust, on='CustomerID').merge(prod, on='ProductID')
 data = data.drop(columns=['Price_y'])
 data.rename(columns={'Price_x': 'Price'}, inplace=True)
 
-#Summary
+# Summary statistics
 print("Data Summary:")
 print()
 print(data.describe())
@@ -42,7 +42,7 @@ print()
 print(data.info())
 print("\n\n")
 
-#Most purchased products
+# Most purchased products
 prod_sales = data.groupby('ProductName')['Quantity'].sum().sort_values(ascending=False)
 print("Most Purchased Products:")
 print()
