@@ -5,10 +5,11 @@ from sklearn.metrics import davies_bouldin_score
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 
-cust = pd.read_csv('Customers.csv')
-trans = pd.read_csv('Transactions.csv')
+# Load datasets
+cust = pd.read_csv('../data/Customers.csv')
+trans = pd.read_csv('../data/Transactions.csv')
 
-#Preparing
+# Data preparation
 trans['TransactionDate'] = pd.to_datetime(trans['TransactionDate'])
 data = trans.merge(cust, on='CustomerID')
 profile = data.groupby('CustomerID').agg(
@@ -18,11 +19,11 @@ profile = data.groupby('CustomerID').agg(
     avg_quantity=('Quantity', 'mean')
 ).reset_index()
 
-#Standardize features
+# Standardize features
 scaler = StandardScaler()
 scaled_data = scaler.fit_transform(profile.iloc[:, 1:])
 
-#optimal clusters & DB Index
+# Find optimal clusters using Davies-Bouldin Index
 db_scores = []
 for k in range(2, 11):
     kmeans = KMeans(n_clusters=k, random_state=42)
@@ -31,16 +32,17 @@ for k in range(2, 11):
     db_scores.append((k, db_score))
 
 optimal_k = min(db_scores, key=lambda x: x[1])[0]
+print(f"Optimal number of clusters: {optimal_k}")
+print(f"Davies-Bouldin Index: {min(db_scores, key=lambda x: x[1])[1]:.2f}")
 
-#Final with optimal K
+# Final clustering with optimal K
 kmeans = KMeans(n_clusters=optimal_k, random_state=42)
 profile['cluster'] = kmeans.fit_predict(scaled_data)
 
-#visualization
+# Visualization using PCA
 pca = PCA(n_components=2)
 reduced_data = pca.fit_transform(scaled_data)
 profile['pca1'], profile['pca2'] = reduced_data[:, 0], reduced_data[:, 1]
-
 
 plt.figure(figsize=(10, 6))
 for cluster in profile['cluster'].unique():
